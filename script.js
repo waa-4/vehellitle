@@ -8,6 +8,10 @@
     classic: { length: 8, attempts: 6, choices: 4 },
     hard: { length: 10, attempts: 6, choices: 8 },
     insane: { length: 12, attempts: 5, choices: 16 },
+    roulette: { length: 1, attempts: 3, choices: 2 },
+    bigsize: { length: 18, attempts: 14, choices: 2 },
+    ultraroulette: { length: 1, attempts: 5, choices: 16 },
+    nojob: { length: 30, attempts: 104, choices: 2 },
     nightmare: { length: 16, attempts: 4, choices: 24 }
   };
   const $ = id => document.getElementById(id);
