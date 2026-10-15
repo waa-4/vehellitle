@@ -91,18 +91,18 @@
     state.won = state.draft.every((value, i) => value === state.answer[i]);
     state.draft = [];
     state.complete = state.won || state.guesses.length >= mode.attempts;
-    if (state.won) setMessage('You found it. Somehow.', 'success');
-    else if (state.complete) setMessage('The sequence wins. Press Reset Current to try again.', 'error');
-    else setMessage('Not quite. Try another sequence.');
+    if (state.won) setMessage('Correct.', 'success');
+    else if (state.complete) setMessage('Out of attempts.', 'error');
+    else setMessage('Incorrect.');
     render();
   }
   function resetCurrent() {
     state.guesses = []; state.draft = []; state.complete = false; state.won = false;
-    setMessage('Same hidden sequence. Fresh attempts.'); render();
+    setMessage('Round reset.'); render();
   }
   function newRound() {
     const mode = modes[state.mode];
-    if (!characters.length) { setMessage('Add characters to stuff.js first.', 'error'); return; }
+    if (!characters.length) { setMessage('No characters available.', 'error'); return; }
     state.pool = characters.slice(0, Math.min(mode.choices, characters.length));
     // An expansion with fewer characters than a difficulty's requested count still works.
     const previous = state.answer.join(','); let answer;
@@ -111,8 +111,8 @@
       if (answer.join(',') !== previous) break;
     }
     state.answer = answer; drawChoices(); resetCurrent();
-    if (state.pool.length < mode.choices) setMessage(`${state.pool.length}/${mode.choices} characters configured. Add more in stuff.js to unlock full difficulty.`);
-    else setMessage('Choose a character to begin.');
+    if (state.pool.length < mode.choices) setMessage('Choose a character.');
+    else setMessage('Choose a character.');
   }
   $('difficulty').addEventListener('change', event => { state.mode = event.target.value; newRound(); });
   $('voice-button').addEventListener('click', () => {
