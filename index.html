@@ -1,55 +1,604 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101014">
-  <meta name="description" content="veHELLitle — sequence guessing game.">
   <title>veHELLitle</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="stuff.js" defer></script>
-  <script src="script.js" defer></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #101014;
+      color: #eeeeee;
+      font-family: Arial, sans-serif;
+    }
+    button, select, input { font: inherit; }
+    button, select {
+      background: #28282f;
+      color: #eee;
+      border: 1px solid #45454f;
+      border-radius: 6px;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { background: #363640; }
+    button:disabled { opacity: .4; cursor: default; }
+    h1 {
+      color: #ff6262;
+      text-align: center;
+      margin: 20px 0 4px;
+      font-size: 34px;
+    }
+    .top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 18px auto;
+      padding: 0 12px;
+    }
+    .custom {
+      display: none;
+      max-width: 650px;
+      margin: 10px auto;
+      padding: 15px;
+      background: #1c1c23;
+      border: 1px solid #34343e;
+      border-radius: 8px;
+    }
+    .custom.show { display: block; }
+    .custom-fields {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 12px;
+    }
+    .custom label { flex: 1; min-width: 130px; font-size: 13px; }
+    .custom input {
+      width: 100%;
+      margin-top: 6px;
+      background: #101014;
+      color: white;
+      border: 1px solid #45454f;
+      border-radius: 5px;
+      padding: 8px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr) 150px;
+      max-width: 1200px;
+      gap: 12px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+    .characters {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      align-items: stretch;
+    }
+    .character {
+      width: 100%;
+      padding: 7px;
+      background: #202027;
+      border: 1px solid #393940;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+    .character img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      background: white;
+      border-radius: 3px;
+    }
+    .character span {
+      font-size: 12px;
+      overflow-wrap: anywhere;
+      text-align: center;
+    }
+    .center { min-width: 0; }
+    .status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: #b8b8c1;
+      font-size: 13px;
+    }
+    #board {
+      overflow-x: auto;
+      max-height: 65vh;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .guess-row {
+      display: grid;
+      grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+      gap: 4px;
+      margin-bottom: 4px;
+      min-width: max(100%, calc(var(--columns) * 28px));
+    }
+    .cell {
+      aspect-ratio: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #393940;
+      background: #222229;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .current .cell { border-color: #777783; }
+    .cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .cell.exact { background: #388f52; border-color: #388f52; }
+    .cell.present { background: #b49434; border-color: #b49434; }
+    .cell.absent { background: #494951; border-color: #494951; }
+    .actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .primary { background: #9f2932; border-color: #9f2932; }
+    .primary:hover:not(:disabled) { background: #b23540; }
+    #message {
+      text-align: center;
+      color: #c5c5ce;
+      font-size: 14px;
+      min-height: 22px;
+    }
+    .success { color: #70ce87 !important; }
+    .error { color: #f17c7c !important; }
+    @media(max-width: 700px) {
+      h1 { font-size: 28px; }
+      .layout {
+        grid-template-columns: 75px minmax(0, 1fr) 75px;
+        gap: 5px;
+        padding: 0 5px;
+      }
+      .character { padding: 3px; }
+      .character img { width: 48px; height: 48px; max-width: 100%; }
+      .character span { font-size: 10px; }
+      .guess-row { gap: 2px; margin-bottom: 2px; }
+      .cell { min-height: 22px; }
+      .actions button { padding: 8px; font-size: 12px; }
+    }
+  </style>
 </head>
 <body>
-  <main class="shell">
-    <header class="masthead">
-      
-      <h1>ve<span>HELL</span>itle</h1>
-      
-    </header>
+  <h1>veHELLitle</h1>
 
-    <section class="game" aria-label="Sequence guessing game">
-      <div class="topline">
-        <div class="settings">
-          <label for="difficulty">MODE</label>
-          <select id="difficulty">
-            <option value="classic">Classic</option>
-            <option value="hard">Hard</option>
-            <option value="insane">Insane</option>
-            <option value="nightmare">Nightmare</option>
-          </select>
-        </div>
-        <div class="right-info"><span id="attempt-count">Attempt 1 / 6</span><button class="voice-button" id="voice-button" aria-pressed="true" title="Toggle voices">VOICE: ON</button></div>
+  <div class="top">
+    <select id="difficulty" aria-label="Difficulty">
+      <option value="classic">Classic</option>
+      <option value="hard">Hard</option>
+      <option value="insane">Insane</option>
+      <option value="roulette">Roulette</option>
+      <option value="bigsize">Big Size</option>
+      <option value="ultraroulette">Ultra Roulette</option>
+      <option value="nojob">No Job</option>
+      <option value="nightmare">Nightmare</option>
+      <option value="custom">Custom</option>
+    </select>
+
+    <button id="voice-button">VOICE: ON</button>
+    <button id="reset-btn">Reset Current</button>
+    <button id="new-btn">New Round</button>
+  </div>
+
+  <div class="custom" id="custom-panel">
+    <div class="custom-fields">
+      <label>
+        Sequence length
+        <input id="custom-length" type="number" min="1" max="24" value="8">
+      </label>
+      <label>
+        Attempts
+        <input id="custom-attempts" type="number" min="1" max="20" value="6">
+      </label>
+      <label>
+        Character choices
+        <input id="custom-choices" type="number" min="1" max="100" value="4">
+      </label>
+    </div>
+    <div class="actions">
+      <button id="apply-custom" class="primary">Apply Settings</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="characters" id="left-panel"></div>
+
+    <main class="center">
+      <div class="status">
+        <span id="mode-label">Classic</span>
+        <span id="attempt-count">Attempt 1 / 6</span>
       </div>
-      <div class="playarea">
-        <aside class="character-panel left-panel" id="left-panel" aria-label="Left-side character choices"></aside>
-        <div class="board-column">
-          <div id="board" class="board" aria-label="Guess grid"></div>
-          <div id="message" class="message" aria-live="polite">Choose a character to begin.</div>
-          <div class="row-actions">
-            <button class="secondary" id="delete-btn">⌫ BACK</button>
-            <button class="primary" id="submit-btn">✓ SUBMIT</button>
-          </div>
-          <div class="row-actions bottom-actions">
-            <button class="secondary" id="reset-btn" title="Replay the current sequence">↺ RESET CURRENT</button>
-            <button class="secondary" id="new-btn" title="Create a different sequence">⤨ NEW ROUND</button>
-          </div>
-        </div>
-        <aside class="character-panel right-panel" id="right-panel" aria-label="Right-side character choices"></aside>
+
+      <div id="board"></div>
+
+      <div class="actions">
+        <button id="delete-btn">Delete</button>
+        <button id="submit-btn" class="primary">Submit</button>
       </div>
-      <div class="footerline"><span><i class="dot green"></i> exact</span><span><i class="dot yellow"></i> wrong position</span><span><i class="dot gray"></i> absent</span></div>
-    </section>
-    
-  </main>
+
+      <div id="message"></div>
+    </main>
+
+    <div class="characters" id="right-panel"></div>
+  </div>
+
+  <script src="stuff.js"></script>
+  <script>
+  (() => {
+    'use strict';
+
+    const $ = id => document.getElementById(id);
+
+    const configured = Array.isArray(window.CHARACTERS)
+      ? window.CHARACTERS : [];
+
+    const seen = new Set();
+    const characters = configured
+      .filter(x => x && typeof x.NAME === 'string'
+        && x.NAME.trim() && typeof x.IMAGE === 'string'
+        && x.IMAGE.trim())
+      .map(x => ({
+        name: x.NAME.trim(),
+        image: x.IMAGE.trim()
+      }))
+      .filter(x => {
+        const key = x.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+    const modes = {
+      classic:       { length: 8, attempts: 6, choices: 4 },
+      hard:          { length: 10, attempts: 6, choices: 8 },
+      insane:        { length: 12, attempts: 5, choices: 16 },
+      roulette:      { length: 1, attempts: 3, choices: 2 },
+      bigsize:       { length: 18, attempts: 14, choices: 2 },
+      ultraroulette: { length: 1, attempts: 5, choices: 16 },
+      nojob:         { length: 14, attempts: 10, choices: 12 },
+      nightmare:     { length: 16, attempts: 4, choices: 24 },
+      custom:        { length: 8, attempts: 6, choices: 4 }
+    };
+
+    const state = {
+      mode: 'classic',
+      pool: [],
+      answer: [],
+      guesses: [],
+      draft: [],
+      complete: false,
+      won: false,
+      voice: true
+    };
+
+    const randomNumber = max => {
+      if (window.crypto && crypto.getRandomValues) {
+        const array = new Uint32Array(1);
+        crypto.getRandomValues(array);
+        return array[0] % max;
+      }
+      return Math.floor(Math.random() * max);
+    };
+
+    function message(text, kind = '') {
+      $('message').textContent = text;
+      $('message').className = kind;
+    }
+
+    function speak(name) {
+      if (!state.voice || !('speechSynthesis' in window)) return;
+
+      try {
+        speechSynthesis.cancel();
+
+        const voice = new SpeechSynthesisUtterance(name);
+        voice.volume = 0.4;
+        voice.rate = 0.65;
+        voice.pitch = 0.5;
+
+        const available = speechSynthesis.getVoices();
+        const english = available.filter(v =>
+          v.lang.toLowerCase().startsWith('en'));
+
+        voice.voice = english.find(v =>
+          /soft|whisper/i.test(v.name)) || english[0] || null;
+
+        speechSynthesis.speak(voice);
+      } catch (error) {
+        console.warn('Speech unavailable', error);
+      }
+    }
+
+    function choose(index) {
+      if (state.complete) return;
+      if (state.draft.length >= modes[state.mode].length) return;
+
+      state.draft.push(index);
+      speak(state.pool[index].name);
+      render();
+    }
+
+    function drawChoices() {
+      $('left-panel').replaceChildren();
+      $('right-panel').replaceChildren();
+
+      state.pool.forEach((character, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'character';
+        button.title = character.name;
+
+        const img = document.createElement('img');
+        img.src = character.image;
+        img.alt = character.name;
+
+        const label = document.createElement('span');
+        label.textContent = character.name;
+
+        button.append(img, label);
+        button.addEventListener('click', () => choose(index));
+
+        const side = index % 2 === 0 ? 'left-panel' : 'right-panel';
+        $(side).append(button);
+      });
+    }
+
+    function score(guess, answer) {
+      const result = Array(guess.length).fill('absent');
+      const remaining = new Map();
+
+      for (let i = 0; i < answer.length; i++) {
+        if (guess[i] === answer[i]) {
+          result[i] = 'exact';
+        } else {
+          remaining.set(answer[i],
+            (remaining.get(answer[i]) || 0) + 1);
+        }
+      }
+
+      for (let i = 0; i < guess.length; i++) {
+        if (result[i] === 'exact') continue;
+
+        const count = remaining.get(guess[i]) || 0;
+        if (count > 0) {
+          result[i] = 'present';
+          remaining.set(guess[i], count - 1);
+        }
+      }
+
+      return result;
+    }
+
+    function makeCell(index, status = '') {
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + status;
+
+      if (index !== undefined && state.pool[index]) {
+        const img = document.createElement('img');
+        img.src = state.pool[index].image;
+        img.alt = state.pool[index].name;
+        img.title = state.pool[index].name;
+        cell.append(img);
+      }
+
+      return cell;
+    }
+
+    function render() {
+      const mode = modes[state.mode];
+      $('board').replaceChildren();
+
+      $('mode-label').textContent =
+        $('difficulty').selectedOptions[0].textContent;
+
+      $('attempt-count').textContent = state.complete
+        ? (state.won ? 'SEQUENCE FOUND' : 'NO ATTEMPTS LEFT')
+        : `Attempt ${state.guesses.length + 1} / ${mode.attempts}`;
+
+      for (let rowIndex = 0; rowIndex < mode.attempts; rowIndex++) {
+        const current = rowIndex === state.guesses.length
+          && !state.complete;
+
+        const row = document.createElement('div');
+        row.className = 'guess-row' + (current ? ' current' : '');
+        row.style.setProperty('--columns', String(mode.length));
+
+        let guess = [];
+        let feedback = null;
+
+        if (rowIndex < state.guesses.length) {
+          guess = state.guesses[rowIndex];
+          feedback = score(guess, state.answer);
+        } else if (current) {
+          guess = state.draft;
+        }
+
+        for (let i = 0; i < mode.length; i++) {
+          row.append(makeCell(
+            guess[i],
+            feedback ? feedback[i] : ''
+          ));
+        }
+
+        $('board').append(row);
+      }
+
+      $('submit-btn').disabled = state.complete
+        || state.draft.length !== mode.length;
+
+      $('delete-btn').disabled = state.complete
+        || state.draft.length === 0;
+    }
+
+    function submit() {
+      const mode = modes[state.mode];
+
+      if (state.complete || state.draft.length !== mode.length)
+        return;
+
+      const guess = [...state.draft];
+      state.guesses.push(guess);
+
+      state.won = guess.every((value, index) =>
+        value === state.answer[index]);
+
+      state.draft = [];
+      state.complete = state.won
+        || state.guesses.length >= mode.attempts;
+
+      if (state.won) {
+        message('Correct.', 'success');
+      } else if (state.complete) {
+        message('Out of attempts.', 'error');
+      } else {
+        message('Incorrect.');
+      }
+
+      render();
+      $('board').scrollTop = $('board').scrollHeight;
+    }
+
+    function resetCurrent() {
+      state.guesses = [];
+      state.draft = [];
+      state.complete = false;
+      state.won = false;
+      message('Round reset.');
+      render();
+      $('board').scrollTop = 0;
+    }
+
+    function newRound() {
+      if (!characters.length) {
+        state.pool = [];
+        state.answer = [];
+        state.guesses = [];
+        state.draft = [];
+        state.complete = true;
+        drawChoices();
+        render();
+        message('No characters found in stuff.js.', 'error');
+        return;
+      }
+
+      const mode = modes[state.mode];
+      const previous = state.answer.join(',');
+
+      state.pool = characters.slice(
+        0, Math.min(mode.choices, characters.length)
+      );
+
+      let answer = [];
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        answer = Array.from(
+          { length: mode.length },
+          () => randomNumber(state.pool.length)
+        );
+
+        if (answer.join(',') !== previous) break;
+      }
+
+      state.answer = answer;
+      drawChoices();
+      resetCurrent();
+      message('Choose a character.');
+    }
+
+    function clamp(value, min, max, fallback) {
+      if (!Number.isFinite(value)) return fallback;
+      return Math.max(min, Math.min(max, Math.floor(value)));
+    }
+
+    function applyCustom() {
+      const length = clamp(
+        Number($('custom-length').value), 1, 24, 8
+      );
+      const attempts = clamp(
+        Number($('custom-attempts').value), 1, 20, 6
+      );
+      const choices = clamp(
+        Number($('custom-choices').value),
+        1, Math.max(1, characters.length), 4
+      );
+
+      $('custom-length').value = length;
+      $('custom-attempts').value = attempts;
+      $('custom-choices').value = choices;
+
+      modes.custom = { length, attempts, choices };
+
+      if (state.mode === 'custom') newRound();
+    }
+
+    $('difficulty').addEventListener('change', event => {
+      state.mode = event.target.value;
+
+      $('custom-panel').classList.toggle(
+        'show', state.mode === 'custom'
+      );
+
+      newRound();
+    });
+
+    $('apply-custom').addEventListener('click', applyCustom);
+
+    $('voice-button').addEventListener('click', () => {
+      state.voice = !state.voice;
+
+      $('voice-button').textContent =
+        'VOICE: ' + (state.voice ? 'ON' : 'OFF');
+
+      if (!state.voice && 'speechSynthesis' in window) {
+        speechSynthesis.cancel();
+      }
+    });
+
+    $('delete-btn').addEventListener('click', () => {
+      if (state.complete) return;
+      state.draft.pop();
+      render();
+    });
+
+    $('submit-btn').addEventListener('click', submit);
+    $('reset-btn').addEventListener('click', resetCurrent);
+    $('new-btn').addEventListener('click', newRound);
+
+    window.addEventListener('keydown', event => {
+      if (event.target.matches('input, select, textarea')) return;
+
+      if (event.key === 'Backspace') {
+        event.preventDefault();
+        if (!state.complete) {
+          state.draft.pop();
+          render();
+        }
+      } else if (event.key === 'Enter') {
+        submit();
+      }
+    });
+
+    $('custom-choices').max = Math.max(1, characters.length);
+    newRound();
+  })();
+  </script>
 </body>
 </html>
