@@ -103,7 +103,7 @@
   function newRound() {
     const mode = modes[state.mode];
     if (!characters.length) { setMessage('No characters available.', 'error'); return; }
-    state.pool = characters.slice(0, Math.min(mode.choices, characters.length));
+     state.pool = [...characters];
     // An expansion with fewer characters than a difficulty's requested count still works.
     const previous = state.answer.join(','); let answer;
     for (let attempt = 0; attempt < 10; attempt++) {
