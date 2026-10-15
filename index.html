@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101014">
+  <meta name="description" content="veHELLitle — an unnecessarily sinister sequence guessing game.">
+  <title>veHELLitle</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="stuff.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div class="eyebrow">THE SEQUENCE IS WAITING</div>
+      <h1>ve<span>HELL</span>itle</h1>
+      <p>guess the sequence. suffer accordingly.</p>
+    </header>
+
+    <section class="game" aria-label="Sequence guessing game">
+      <div class="topline">
+        <div class="settings">
+          <label for="difficulty">MODE</label>
+          <select id="difficulty">
+            <option value="classic">Classic</option>
+            <option value="hard">Hard</option>
+            <option value="insane">Insane</option>
+            <option value="nightmare">Nightmare</option>
+          </select>
+        </div>
+        <div class="right-info"><span id="attempt-count">Attempt 1 / 6</span><button class="voice-button" id="voice-button" aria-pressed="true" title="Toggle voices">VOICE: ON</button></div>
+      </div>
+      <div class="playarea">
+        <aside class="character-panel left-panel" id="left-panel" aria-label="Left-side character choices"></aside>
+        <div class="board-column">
+          <div id="board" class="board" aria-label="Guess grid"></div>
+          <div id="message" class="message" aria-live="polite">Choose a character to begin.</div>
+          <div class="row-actions">
+            <button class="secondary" id="delete-btn">⌫ BACK</button>
+            <button class="primary" id="submit-btn">✓ SUBMIT</button>
+          </div>
+          <div class="row-actions bottom-actions">
+            <button class="secondary" id="reset-btn" title="Replay the current sequence">↺ RESET CURRENT</button>
+            <button class="secondary" id="new-btn" title="Create a different sequence">⤨ NEW ROUND</button>
+          </div>
+        </div>
+        <aside class="character-panel right-panel" id="right-panel" aria-label="Right-side character choices"></aside>
+      </div>
+      <div class="footerline"><span><i class="dot green"></i> exact</span><span><i class="dot yellow"></i> wrong position</span><span><i class="dot gray"></i> absent</span></div>
+    </section>
+    <footer>unofficial original fan game · edit characters in <code>stuff.js</code></footer>
+  </main>
+</body>
+</html>
